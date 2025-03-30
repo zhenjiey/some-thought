@@ -212,10 +212,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // 更新个人资料
         if (currentPerspective === 'boy') {
             profilePicture.className = 'profile-picture boy-avatar';
-            profileName.textContent = '小明';
+            profileName.textContent = '郝天';
         } else {
             profilePicture.className = 'profile-picture girl-avatar';
-            profileName.textContent = '小美';
+            profileName.textContent = '薛家燕';
         }
     }
     
