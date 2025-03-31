@@ -1,0 +1,25 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+    font-family: sans-serif;
+}
+
+canvas {
+    border: 1px solid black;
+    background-color: white;
+    /* 添加地面效果 */
+    background-image: linear-gradient(to bottom, white 96%, #8B4513 96%); /* 简单棕色地面 */
+}
+
+h1 {
+    margin-bottom: 10px;
+}
+
+p {
+    margin-top: 10px;
+} 
