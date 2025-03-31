@@ -17,6 +17,50 @@ let gameStarted = false; // 游戏是否已开始
 const winDuration = 30000; // 30秒通关 (以毫秒为单位)
 let startTime = null;
 
+// 背景音乐
+let bgMusic = new Audio('background-music.mp3'); // 指定音乐文件路径
+bgMusic.loop = true; // 设置循环播放
+bgMusic.volume = 0.5; // 设置音量 (0.0 到 1.0)
+let musicPlaying = false; // 标记音乐是否已成功播放
+
+// 尝试播放音乐的函数（处理自动播放限制）
+function tryPlayMusic() {
+    let playPromise = bgMusic.play();
+
+    if (playPromise !== undefined) {
+        playPromise.then(_ => {
+            // 自动播放成功
+            musicPlaying = true;
+            console.log("背景音乐开始播放");
+        })
+        .catch(error => {
+            // 自动播放失败，通常需要用户交互后才能播放
+            musicPlaying = false;
+            console.log("背景音乐自动播放失败，需要用户交互: ", error);
+            // 可以在第一次交互时（如点击开始）再次尝试播放
+            document.body.addEventListener('click', playMusicOnClick, { once: true });
+            document.body.addEventListener('touchstart', playMusicOnClick, { once: true });
+            document.body.addEventListener('keydown', playMusicOnClick, { once: true });
+        });
+    }
+}
+
+// 用户交互后播放音乐
+function playMusicOnClick() {
+    if (!musicPlaying) {
+        bgMusic.play().then(() => {
+            musicPlaying = true;
+            console.log("用户交互后，背景音乐开始播放");
+        }).catch(error => {
+            console.error("用户交互后播放音乐仍然失败: ", error);
+        });
+    }
+     // 移除监听器，避免重复添加
+    document.body.removeEventListener('click', playMusicOnClick);
+    document.body.removeEventListener('touchstart', playMusicOnClick);
+    document.body.removeEventListener('keydown', playMusicOnClick);
+}
+
 // 图片资源
 let playerImg = new Image();
 let backgroundImg = new Image();
@@ -148,6 +192,8 @@ function checkCollision(player, obstacle) {
 function gameOver() {
     isGameOver = true;
     cancelAnimationFrame(animationFrameId);
+    bgMusic.pause(); // 游戏结束时暂停音乐
+    musicPlaying = false;
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     ctx.font = '40px Arial';
@@ -163,6 +209,8 @@ function gameOver() {
 function gameWin() {
     isGameOver = true; // 游戏结束，但显示胜利信息
     cancelAnimationFrame(animationFrameId);
+    bgMusic.pause(); // 游戏胜利时暂停音乐
+    musicPlaying = false;
     ctx.fillStyle = 'rgba(0, 100, 0, 0.7)'; // 绿色背景
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     ctx.font = '30px Arial';
@@ -273,6 +321,12 @@ function initGame() {
     // 开始游戏循环
     cancelAnimationFrame(animationFrameId); // 确保之前的循环已停止
     animationFrameId = requestAnimationFrame(gameLoop);
+
+    // 尝试开始播放背景音乐
+    if (!musicPlaying) {
+        bgMusic.currentTime = 0; // 每次重新开始都从头播放
+        tryPlayMusic();
+    }
 }
 
 // 显示开始提示
@@ -298,9 +352,13 @@ function showStartScreen() {
 // 跳跃或开始游戏的统一函数
 function handleInteraction() {
     if (!gameStarted) {
-        initGame();
+        initGame(); // initGame 内部会尝试播放音乐
     } else if (!isGameOver) {
         player.jump();
+    }
+    // 如果音乐因为自动播放限制没能播放，在第一次交互时尝试播放
+    if (!musicPlaying) {
+        playMusicOnClick();
     }
 }
 
